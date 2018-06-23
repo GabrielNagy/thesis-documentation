@@ -24,7 +24,7 @@
 	      "../emacs-reveal/" (file-name-directory load-file-name)))
 (require 'reveal-config)
 (setq org-reveal-root "./reveal.js"
-      org-reveal-title-slide "title-slide.html")
+      org-reveal-title-slide nil)
 
 (setq org-publish-project-alist
       (list
@@ -38,6 +38,11 @@
 	     :base-directory "img"
 	     :base-extension (regexp-opt '("png" "jpg" "ico" "svg" "gif"))
 	     :publishing-directory "./public/img"
+	     :publishing-function 'org-publish-attachment)
+       (list "data"
+	     :base-directory "data"
+	     :base-extension (regexp-opt '("css" "js" "html"))
+	     :publishing-directory "./public/data"
 	     :publishing-function 'org-publish-attachment)
        (list "audios"
 	     :base-directory "audio"
@@ -56,12 +61,6 @@
 	     :base-extension 'any
 	     :publishing-directory "./public/reveal.js/css/theme"
 	     :publishing-function 'org-publish-attachment)
-       (list "reveal-toc-plugin"
-	     :base-directory "emacs-reveal/Reveal.js-TOC-Progress/plugin"
-	     :base-extension 'any
-	     :publishing-directory "./public/reveal.js/plugin"
-	     :publishing-function 'org-publish-attachment
-	     :recursive t)
        (list "reveal.js-plugins-anything"
 	     :base-directory "emacs-reveal/reveal.js-plugins/anything"
 	     :base-extension 'any

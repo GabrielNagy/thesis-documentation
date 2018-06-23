@@ -1,0 +1,305 @@
+# Local IspellDict: en
+#+STARTUP: showeverything
+#+REVEAL_TRANS: slide
+#+REVEAL_THEME: blood
+#+OPTIONS: num:nil toc:nil
+#+REVEAL_PLUGINS: (highlight notes)
+#+REVEAL_HIGHLIGHT_CSS: data/darcula.css
+#+REVEAL_HLEVEL: 2
+#+TITLE: Continuous Integration with Buildbot
+#+AUTHOR: Gabriel Nagy
+#+DATE: <2018-06-23 Sb>
+#+EMAIL: gabrielnagy@me.com
+
+* Continuous Integration with Buildbot
+* 
+  *Continuous Integration* - the process of automating
+the build and testing of code every time a team member commits changes
+to version control
+
+  #+ATTR_REVEAL: :frag frag-style
+  *Buildbot* - CI tool written in Python, published under the GPL license
+* Scope of this thesis
+#+ATTR_REVEAL: :frag frag-style
+Implement new custom features and shed light on Buildbot's capabilities as a CI tool
+
+** Why use Buildbot?
+   More well-known and widely-used alternatives:
+   #+ATTR_REVEAL: :frag (appear)
+   - *Jenkins* \rightarrow open-source, written in Java
+   - *Travis* \rightarrow free for public GitHub projects, offers paid plans
+   - *CircleCI* \rightarrow 1,500 build minutes per month for free, offers paid plans
+     #+BEGIN_NOTES
+     speak about how at work Jenkins is used because of projects using C++ all following the same patterns
+     #+END_NOTES
+** What's the catch?
+   - most of the aforementioned tools come ready-to-use
+   - the fundamental design is fixed and limited by the authors
+   - for users with simple demands, the fundamental design fits
+   #+ATTR_REVEAL: :frag appear
+   - for everyone else ([[https://build.webkit.org/][WebKit]], [[https://build.chromium.org/buildbot][Chromium]], [[https://ci.apache.org/waterfall?&show=bb-openbsd&show=svn-windows-local&show=svn-windows-ra&show=svn-trunk-rat-report&show=svn-x64-centos-gcc&show=svn-x64-ubuntu-gcc&show=svn-backport-conflicts-1.7.x&show=svn-backport-conflicts-1.8.x&show=svn-warnings&show_events=true&][Subversion]]), there's *Buildbot*
+   #+BEGIN_NOTES
+   - tools such as Jenkins come ready-to-use with functionalities limited to the ones envisioned by the authors
+   - this arrangement suits common use-cases well: building and testing Java projects, Ruby gems, etc.
+   - not well suited to more particular cases, like mixed-language projects or complex release tasks
+   - speak about well-known projects using Buildbot: WebKit, Chromium, Mozilla Firefox/Thunderbird/SeaMonkey (over 700 build and test workers)
+   #+END_NOTES
+** What makes Buildbot appealing?
+   #+ATTR_REVEAL: :frag (appear)
+   - batteries-included
+     - lightweight and easily extensible
+     - add builders and test scenarios in just a few lines of code
+   - simplicity of Python
+     - easy to debug
+     - friendly syntax
+** Adding a test scenario
+#+BEGIN_SRC python
+factory = util.BuildFactory()
+factory.addSteps([
+    steps.Git(repourl='git://github.com/buildbot/hello-world.git',
+              mode='incremental'),
+    steps.ShellCommand(command=["trial", "hello"],
+                       env={"PYTHONPATH": "."})
+])
+#+END_SRC
+* Technologies used
+** 
+  - *Python*
+    - created by Guido van Rossum and released in 1991
+    - used in about everything as of 2018
+    - 91.1% of Buildbot's codebase
+  - *Angular*
+    - maintained by smart guys at Google
+    - used to write single-page web applications
+    - extensively used by Buildbot for the frontend
+  #+BEGIN_NOTES
+  - we use Python in all of our backend custom implementations & to develop a static dashboard using Flask
+  - we use Angular to develop a custom dynamic dashboard using AJAX principles
+    - + CoffeeScript - a superset of JavaScript, making it more pythonic (to avoid scaring away backend developers)
+    - + pug - minimalist template engine, decrease redundancy of writing HTML code
+    - + node - server-side JavaScript
+  #+END_NOTES 
+
+
+* Concepts
+** 
+#+REVEAL_HTML: <img class="stretch" src="img/buildbot_overview.png">
+** Digging even deeper
+- sourcestamp
+- build
+- buildset
+- buildrequest
+- builder
+- scheduler
+
+#+BEGIN_NOTES
+- sourcestamp - unique id, each build is assigned one
+- build - a single build/test run, on a specific source code revision; it consists of a series of steps described by the build factory
+- buildset - a set of builds triggered one time
+- buildrequest - a query for building on a single builder; prioritized from oldest to newest
+- builder - a queue for a certain type of build; they run independently, optional properties may cause them to interleave with each other
+- scheduler - responsible for deciding when builds should run, managed through the configuration file
+#+END_NOTES
+
+** Default implementations
+#+BEGIN_NOTES
+present Buildbot built-in stuff (vanilla installation)
+- console view
+- waterfall view
+- grid view (newly added)
+- simple settings
+- builder pages
+On a fresh installation, Buildbot provides us with some basic views
+#+END_NOTES
+*** Console view
+#+REVEAL_HTML: <img class="stretch" src="img/console_view.png">
+
+#+BEGIN_NOTES
+Buildbot's first basic view:
+- queries for change sources 
+- arranges the activity by placing changes vertically and builders horizontally
+- if tags exist, they are used to group the builders
+#+END_NOTES
+
+*** Waterfall view
+#+REVEAL_HTML: <img class="stretch" src="img/waterfall_view.png">
+
+#+BEGIN_NOTES
+A more "in-your-face" view:
+- shows all activity in a vertical timeline
+- builds are represented by boxes of various height denoting duration
+- builds sorted by builders horizontally, to allow a better representation of build scheduling 
+#+END_NOTES
+
+*** Grid view
+#+REVEAL_HTML: <img class="stretch" src="img/grid_view.png">
+
+#+BEGIN_NOTES
+Last view to be added in Buildbot 0.9:
+- activity arranged vertically by builders and horizontally by changes 
+- reminiscent of Buildbot 0.8
+- branches and tags can be filtered in this view 
+#+END_NOTES
+
+*** Settings
+#+REVEAL_HTML: <img class="stretch" src="img/settings.png">
+
+#+BEGIN_NOTES
+Some basic options for configuring the appearance of Buildbot
+#+END_NOTES
+
+*** Build page
+#+REVEAL_HTML: <img class="stretch" src="img/build_page.png">
+
+#+BEGIN_NOTES
+- webpage corresponding to a single build
+- commands and their outputs can be seen
+- worker, build properties, etc etc
+#+END_NOTES
+
+* Custom implementations
+** Backend componentization
+- by default, all configuration is stored in the =master.cfg= file
+- hard to organize
+- we split the file into different modules
+*** 
+   #+REVEAL_HTML: <img class="stretch" src="img/componentization.png">
+
+#+BEGIN_NOTES
+The figure below illustrates this componentization for the Nokia Buildbot
+project, which has 4 projects running on the same master,
+each of them having an arbitrary number of builders (\texttt{builders}
+subfolder) and a specific web dashboard (\texttt{dashboard} subfolder).
+
+Some of the build steps have log outputs that do not match Buildbot's
+default parsers, so custom logparsers have been implemented (\texttt{builders/steps}
+subfolder). 
+
+Custom notifiers have the purpose of informing the user/admin about
+vital build or system information, the current implemented one uses
+LDAP to query the active directory in order to find the e-mail address
+of an user (\texttt{notifier} subfolder). 
+
+As the project increases in size, metrics become necessary. We use
+Prometheus to keep track of information, and Grafana to crunch it
+and present it in an user-friendly way (\texttt{reporters} subfolder).
+
+All of these components could be worked into the \texttt{master.cfg}
+file, but the result would be an approx. 2300 line configuration file
+that encompasses each category, making code modifications and additions
+more prone to errors and most certainly a chore to go through.
+#+END_NOTES
+
+** Email lookup using LDAP
+   - *Use case summary:* The developer wants to trigger a manual build with his recent code changes and receive the results by email.
+   - *Prerequisites:* The developer, in his changed repository, executes a command to send the changes to Buildbot.
+   - *Expected result:* The developer receives an email with the build results.
+
+*** Query the AD for the email address using the user's CSL (corporate short login)
+   #+REVEAL_HTML: <img class="stretch" src="img/ldapsearch.png">
+
+*** Implementing the search in Buildbot
+    - Buildbot's built-in mailer accepts a =lookup= parameter
+    - we implement a class for Buildbot's =IEmailLookup= interface
+    - the class has a =getAddress= function which takes the username as parameter
+    - =getAddress= implements the LDAP search in Python and returns a valid e-mail
+*** =mailnotifier.py=
+#+BEGIN_SRC python
+from buildbot import interfaces, util
+from zope.interface import implementer
+
+@implementer(interfaces.IEmailLookup)
+class IcdCslToEmail(util.ComparableMixin):
+    def __init__(self, emailsMap=None):
+        self.emailsMap = emailsMap
+
+    def getAddress(self, csl):
+        ... # implement LDAP search
+        return valid_email
+#+END_SRC
+*** =mailnotifier.py=
+#+BEGIN_SRC python
+template = u'''\
+<h4>Build status: {{ summary }}</h4>
+<p> Worker used: {{ workername }}</p>
+{% for step in build['steps'] %}
+<p> {{ step['name'] }}: {{ step['result'] }}</p>
+{% endfor %}
+<p><b> -- The Buildbot</b></p>
+'''
+#+END_SRC
+
+*** =master.cfg=
+#+BEGIN_SRC python
+from services import mailnotifier
+
+m = reporters.MailNotifier(
+    fromaddr="gnagy@localhost",
+    lookup=mailnotifier.IcdCslToEmail(),
+    messageFormatter=reporters.MessageFormatter(
+        template=mailnotifier.template,
+        template_type='html'))
+c['services'].append(m)
+#+END_SRC
+
+*** Sample email
+   #+REVEAL_HTML: <img class="stretch" src="img/sample_mail.png">
+
+*** Behind the scenes
+   #+REVEAL_HTML: <img class="stretch" src="img/sample_mail_log.png">
+
+** Custom log parsing
+   - *Use case summary:* Summarize the failed/succeeded tests in a command
+   - *Prerequisites:* The builder runs a build/test command
+   - *Expected result:* Buildbot analyzes the logs and updates the build status accordingly
+
+*** Log output to analyze
+#+BEGIN_EXAMPLE
+--------------------------------------
+Ran 3 tests in 0.035s
+FAILED (failures=1, successes=2)
+#+END_EXAMPLE
+- we implement a custom =ShellCommand=
+- using regex, we classify the successes and failures
+
+*** Code snippets - =trial.py=
+#+BEGIN_SRC python
+class Trial(shell.ShellCommand):
+    def gatherTestStatistics(self, line):
+        m = re.search('failures=*(\d+)', line)
+        if m:
+            self.failures = m.group(1)
+        m = re.search(r'successes=*(\d+)', line)
+        if m:
+            self.successes = m.group(1)
+
+    def getResultSummary(self):
+        # return a summary with the number of passed/failed tests
+        return {u'step': cmdsummary}
+#+END_SRC
+
+*** =master.cfg=
+#+BEGIN_SRC python
+from builders.steps import trial
+
+factory = util.BuildFactory()
+factory.addSteps([
+    steps.Git(
+        repourl='git://github.com/buildbot/hello-world.git',
+        mode='incremental'),
+    trial.Trial(command=["trial", "hello"], env={
+        "PYTHONPATH": "."
+    })
+])
+#+END_SRC
+
+*** Results
+   #+REVEAL_HTML: <img class="stretch" src="img/log_parser.png">
+
+** Custom dashboards
+   - can be written in
+     - Flask (Python framework for web apps)
+       - simpler implementation
+     - Angular (framework used by the Buildbot frontend
+       - implementation is more difficult
+*** Flask Dashboards
