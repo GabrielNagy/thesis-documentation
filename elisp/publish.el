@@ -36,7 +36,7 @@
 	     :publishing-directory "./public")
        (list "images"
 	     :base-directory "img"
-	     :base-extension (regexp-opt '("png" "jpg" "ico" "svg" "gif"))
+	     :base-extension (regexp-opt '("png" "jpg" "ico" "svg" "gif" "webm"))
 	     :publishing-directory "./public/img"
 	     :publishing-function 'org-publish-attachment)
        (list "data"

@@ -190,6 +190,25 @@ that encompasses each category, making code modifications and additions
 more prone to errors and most certainly a chore to go through.
 #+END_NOTES
 
+** Triggering builds manually
+   #+ATTR_REVEAL: :frag (appear)
+   - auto build trigger:
+     - =SingleBranchScheduler= - poll repository and auto build changes
+   - manual build trigger:
+     #+ATTR_REVEAL: :frag (grow none)
+     - =Try_Userpass= - send changes manually (i.e. command line)
+     - =ForceScheduler= - button on the web interface
+
+*** Solution
+    - python ~try~ script for user
+    - auto collect diff and user information
+    - send information to buildbot
+
+*** Use case
+    - *Use case summary:* User manually (without committing and pushing) sends his diff to buildbot for testing
+    - *Prerequisites:* User is in the repository root
+    - *Triggers:* User executes ~try~ command
+    - *Expected result:* Diff and user info sent to buildbot for testing
 ** Email lookup using LDAP
    - *Use case summary:* The developer wants to trigger a manual build with his recent code changes and receive the results by email.
    - *Prerequisites:* The developer, in his changed repository, executes a command to send the changes to Buildbot.
@@ -302,4 +321,41 @@ factory.addSteps([
        - simpler implementation
      - Angular (framework used by the Buildbot frontend
        - implementation is more difficult
+
 *** Flask Dashboards
+    - easier to implement, with some caveats
+    #+ATTR_REVEAL: :frag appear
+      - not updating automatically on new builds
+      - page needs to be manually reloaded
+
+*** 
+    #+REVEAL_HTML: <img class="stretch" src="img/dashboard_info.png">
+
+*** Result
+    #+REVEAL_HTML: <video class="stretch" autoplay loop><source data-src="./img/flask_run.webm" type="video/webm" /></video>
+
+*** Angular Dashboards
+    - difficult to implement (different knowledgebase required)
+    - need MVC and Angular knowledge
+    - more rewarding and efficient
+
+*** Result
+    #+REVEAL_HTML: <video class="stretch" autoplay loop><source data-src="./img/angular_run.webm" type="video/webm" /></video>
+
+** Capturing metrics
+   - export to Prometheus
+   - visualize the data with Grafana
+
+*** Buildbot Dashboard
+    #+REVEAL_HTML: <img class="stretch" src="img/buildbot_grafana.png">
+
+*** System Dashboard
+    #+REVEAL_HTML: <img class="stretch" src="img/node_exporter_grafana.png">
+
+* Conclusion
+  #+ATTR_REVEAL: :frag (appear)
+  - for users with simple needs, other CI tools may be more suitable
+  - more complex demands: *buildbot*
+  - buildbot *CAN* do it, you just need to tell it *HOW*
+
+* Questions
