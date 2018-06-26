@@ -12,6 +12,8 @@
 #+EMAIL: gabrielnagy@me.com
 
 * Continuous Integration with Buildbot
+{{{author}}}
+
 * 
   *Continuous Integration* - the process of automating
 the build and testing of code every time a team member commits changes
@@ -85,7 +87,6 @@ factory.addSteps([
 ** 
 #+REVEAL_HTML: <img class="stretch" src="img/buildbot_overview.png">
 ** Digging even deeper
-- sourcestamp
 - build
 - buildset
 - buildrequest
@@ -93,7 +94,6 @@ factory.addSteps([
 - scheduler
 
 #+BEGIN_NOTES
-- sourcestamp - unique id, each build is assigned one
 - build - a single build/test run, on a specific source code revision; it consists of a series of steps described by the build factory
 - buildset - a set of builds triggered one time
 - buildrequest - a query for building on a single builder; prioritized from oldest to newest
@@ -131,23 +131,6 @@ A more "in-your-face" view:
 - builds sorted by builders horizontally, to allow a better representation of build scheduling 
 #+END_NOTES
 
-*** Grid view
-#+REVEAL_HTML: <img class="stretch" src="img/grid_view.png">
-
-#+BEGIN_NOTES
-Last view to be added in Buildbot 0.9:
-- activity arranged vertically by builders and horizontally by changes 
-- reminiscent of Buildbot 0.8
-- branches and tags can be filtered in this view 
-#+END_NOTES
-
-*** Settings
-#+REVEAL_HTML: <img class="stretch" src="img/settings.png">
-
-#+BEGIN_NOTES
-Some basic options for configuring the appearance of Buildbot
-#+END_NOTES
-
 *** Build page
 #+REVEAL_HTML: <img class="stretch" src="img/build_page.png">
 
@@ -168,23 +151,22 @@ Some basic options for configuring the appearance of Buildbot
 #+BEGIN_NOTES
 The figure below illustrates this componentization for the Nokia Buildbot
 project, which has 4 projects running on the same master,
-each of them having an arbitrary number of builders (\texttt{builders}
-subfolder) and a specific web dashboard (\texttt{dashboard} subfolder).
+each of them having an arbitrary number of builders
+subfolder) and a specific web dashboard.
 
 Some of the build steps have log outputs that do not match Buildbot's
-default parsers, so custom logparsers have been implemented (\texttt{builders/steps}
-subfolder). 
+default parsers, so custom logparsers have been implemented.
 
 Custom notifiers have the purpose of informing the user/admin about
 vital build or system information, the current implemented one uses
 LDAP to query the active directory in order to find the e-mail address
-of an user (\texttt{notifier} subfolder). 
+of an user.
 
 As the project increases in size, metrics become necessary. We use
 Prometheus to keep track of information, and Grafana to crunch it
-and present it in an user-friendly way (\texttt{reporters} subfolder).
+and present it in an user-friendly way.
 
-All of these components could be worked into the \texttt{master.cfg}
+All of these components could be worked into the master.cfg
 file, but the result would be an approx. 2300 line configuration file
 that encompasses each category, making code modifications and additions
 more prone to errors and most certainly a chore to go through.
@@ -198,6 +180,12 @@ more prone to errors and most certainly a chore to go through.
      #+ATTR_REVEAL: :frag (grow none)
      - =Try_Userpass= - send changes manually (i.e. command line)
      - =ForceScheduler= - button on the web interface
+
+#+BEGIN_NOTES
+By default, Buildbot polls repositories and automatically builds new commits.
+Developers at Nokia needed a way to test their code without committing to trunk and risk breaking it.
+I devised a way for them to manually send changes to Buildbot for testing. For that I used the Try_Userpass scheduler.
+#+END_NOTES
 
 *** Solution
     - python ~try~ script for user
@@ -213,6 +201,11 @@ more prone to errors and most certainly a chore to go through.
    - *Use case summary:* The developer wants to trigger a manual build with his recent code changes and receive the results by email.
    - *Prerequisites:* The developer, in his changed repository, executes a command to send the changes to Buildbot.
    - *Expected result:* The developer receives an email with the build results.
+
+#+BEGIN_NOTES
+- valid just for manual (try) builds as auto builds get the email address from the commit message
+- another way for the developer to see his results besides going to the Buildbot page
+#+END_NOTES
 
 *** Query the AD for the email address using the user's CSL (corporate short login)
    #+REVEAL_HTML: <img class="stretch" src="img/ldapsearch.png">
@@ -272,6 +265,13 @@ c['services'].append(m)
    - *Prerequisites:* The builder runs a build/test command
    - *Expected result:* Buildbot analyzes the logs and updates the build status accordingly
 
+#+BEGIN_NOTES
+- by default, Buildbot provides a number of parsers for commonly used build commands such as make
+- for other outputs custom parsers can be implemented
+- for ShellCommands, buildbot uses the return code to mark the step as passed or failed
+- in some cases, we had test commands which always exited with 0 even in case of failure
+#+END_NOTES
+
 *** Log output to analyze
 #+BEGIN_EXAMPLE
 --------------------------------------
@@ -280,6 +280,11 @@ FAILED (failures=1, successes=2)
 #+END_EXAMPLE
 - we implement a custom =ShellCommand=
 - using regex, we classify the successes and failures
+
+#+BEGIN_NOTES
+- Trial command output (twisted test suite)
+- we parse the output, counting the number of failed/passed tests
+#+END_NOTES
 
 *** Code snippets - =trial.py=
 #+BEGIN_SRC python
@@ -315,11 +320,15 @@ factory.addSteps([
 *** Results
    #+REVEAL_HTML: <img class="stretch" src="img/log_parser.png">
 
+#+BEGIN_NOTES
+- buildbot automatically updated the build summary with the number of passed/failed tests
+#+END_NOTES
+
 ** Custom dashboards
    - can be written in
      - Flask (Python framework for web apps)
        - simpler implementation
-     - Angular (framework used by the Buildbot frontend
+     - Angular (framework used by the Buildbot frontend)
        - implementation is more difficult
 
 *** Flask Dashboards
@@ -346,16 +355,40 @@ factory.addSteps([
    - export to Prometheus
    - visualize the data with Grafana
 
+#+BEGIN_NOTES
+- now that we have a fully working buildbot installation, we might want to monitor it and see some statistics regarding the installation
+and the machine on which buildbot runs
+- to collect metrics we use Prometheus, an open-source monitoring system
+- then we export said metrics to Grafana, a more eye-candy visualizing tool
+#+END_NOTES
+
+
 *** Buildbot Dashboard
     #+REVEAL_HTML: <img class="stretch" src="img/buildbot_grafana.png">
 
+#+BEGIN_NOTES
+- buildbot master dashboard
+- tables for workers and builders
+- with some tinkering inside Grafana we can make the names inside the columns clickable, sending us to the buildbot page for the specific workers/builders
+#+END_NOTES
+
 *** System Dashboard
     #+REVEAL_HTML: <img class="stretch" src="img/node_exporter_grafana.png">
+
+#+BEGIN_NOTES
+- system dashboard
+- see some vital information such as memory, disk usage, cpu load/idle and data transfer
+#+END_NOTES
 
 * Conclusion
   #+ATTR_REVEAL: :frag (appear)
   - for users with simple needs, other CI tools may be more suitable
   - more complex demands: *buildbot*
   - buildbot *CAN* do it, you just need to tell it *HOW*
+
+#+BEGIN_NOTES
+- the principle on which buildbot bases itself on is simplicity
+- buildbot has the required capabilities, you need to know the tools to implement them
+#+END_NOTES
 
 * Questions
