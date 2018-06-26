@@ -1,4 +1,4 @@
-# Local IspellDict: en
+# Local IspellDict: english
 #+STARTUP: showeverything
 #+REVEAL_TRANS: slide
 #+REVEAL_THEME: blood
@@ -27,7 +27,7 @@ Implement new custom features and shed light on Buildbot's capabilities as a CI 
 
 ** Why use Buildbot?
    More well-known and widely-used alternatives:
-   #+ATTR_REVEAL: :frag (appear)
+   #+ATTR_REVEAL: :frag appear
    - *Jenkins* \rightarrow open-source, written in Java
    - *Travis* \rightarrow free for public GitHub projects, offers paid plans
    - *CircleCI* \rightarrow 1,500 build minutes per month for free, offers paid plans
@@ -63,7 +63,7 @@ Implement new custom features and shed light on Buildbot's capabilities as a CI 
   - *Angular*
     - maintained by smart guys at Google
     - used to write single-page web applications
-    - extensively used by Buildbot for the frontend
+    - extensively used by Buildbot for the front-end
   #+BEGIN_NOTES
   - we use Python in all of our backend custom implementations & to develop a static dashboard using Flask
   - we use Angular to develop a custom dynamic dashboard using AJAX principles
@@ -107,7 +107,7 @@ Buildbot's first basic view:
 
 #+BEGIN_NOTES
 A more "in-your-face" view:
-- shows all activity in a vertical timeline
+- shows all activity in a vertical time-line
 - builds are represented by boxes of various height denoting duration
 - builds sorted by builders horizontally, to allow a better representation of build scheduling 
 #+END_NOTES
@@ -116,7 +116,7 @@ A more "in-your-face" view:
 #+REVEAL_HTML: <img class="stretch" src="img/build_page.png">
 
 #+BEGIN_NOTES
-- webpage corresponding to a single build
+- web page corresponding to a single build
 - commands and their outputs can be seen
 - worker, build properties, etc etc
 #+END_NOTES
@@ -136,7 +136,7 @@ each of them having an arbitrary number of builders
 subfolder) and a specific web dashboard.
 
 Some of the build steps have log outputs that do not match Buildbot's
-default parsers, so custom logparsers have been implemented.
+default parsers, so custom log parsers have been implemented.
 
 Custom notifiers have the purpose of informing the user/admin about
 vital build or system information, the current implemented one uses
@@ -192,24 +192,10 @@ I devised a way for them to manually send changes to Buildbot for testing. For t
    #+REVEAL_HTML: <img class="stretch" src="img/ldapsearch.png">
 
 *** Implementing the search in Buildbot
-    - Buildbot's built-in mailer accepts a =lookup= parameter
     - we implement a class for Buildbot's =IEmailLookup= interface
     - the class has a =getAddress= function which takes the username as parameter
     - =getAddress= implements the LDAP search in Python and returns a valid e-mail
-*** =mailnotifier.py=
-#+BEGIN_SRC python
-from buildbot import interfaces, util
-from zope.interface import implementer
 
-@implementer(interfaces.IEmailLookup)
-class IcdCslToEmail(util.ComparableMixin):
-    def __init__(self, emailsMap=None):
-        self.emailsMap = emailsMap
-
-    def getAddress(self, csl):
-        ... # implement LDAP search
-        return valid_email
-#+END_SRC
 *** =mailnotifier.py=
 #+BEGIN_SRC python
 template = u'''\
@@ -264,10 +250,6 @@ class Trial(shell.ShellCommand):
         m = re.search(r'successes=*(\d+)', line)
         if m:
             self.successes = m.group(1)
-
-    def getResultSummary(self):
-        # return a summary with the number of passed/failed tests
-        return {u'step': cmdsummary}
 #+END_SRC
 
 *** Results
@@ -345,3 +327,5 @@ and the machine on which buildbot runs
 #+END_NOTES
 
 * Questions
+  Presentation developed with =emacs=, =org-mode= and =reveal.js=. Deployed on GitLab.
+  Buildbot created by Brian Warner.
