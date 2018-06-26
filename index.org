@@ -54,16 +54,6 @@ Implement new custom features and shed light on Buildbot's capabilities as a CI 
    - simplicity of Python
      - easy to debug
      - friendly syntax
-** Adding a test scenario
-#+BEGIN_SRC python
-factory = util.BuildFactory()
-factory.addSteps([
-    steps.Git(repourl='git://github.com/buildbot/hello-world.git',
-              mode='incremental'),
-    steps.ShellCommand(command=["trial", "hello"],
-                       env={"PYTHONPATH": "."})
-])
-#+END_SRC
 * Technologies used
 ** 
   - *Python*
@@ -86,13 +76,6 @@ factory.addSteps([
 * Concepts
 ** 
 #+REVEAL_HTML: <img class="stretch" src="img/buildbot_overview.png">
-** Digging even deeper
-- build
-- buildset
-- buildrequest
-- builder
-- scheduler
-
 #+BEGIN_NOTES
 - build - a single build/test run, on a specific source code revision; it consists of a series of steps described by the build factory
 - buildset - a set of builds triggered one time
@@ -106,8 +89,6 @@ factory.addSteps([
 present Buildbot built-in stuff (vanilla installation)
 - console view
 - waterfall view
-- grid view (newly added)
-- simple settings
 - builder pages
 On a fresh installation, Buildbot provides us with some basic views
 #+END_NOTES
@@ -241,19 +222,6 @@ template = u'''\
 '''
 #+END_SRC
 
-*** =master.cfg=
-#+BEGIN_SRC python
-from services import mailnotifier
-
-m = reporters.MailNotifier(
-    fromaddr="gnagy@localhost",
-    lookup=mailnotifier.IcdCslToEmail(),
-    messageFormatter=reporters.MessageFormatter(
-        template=mailnotifier.template,
-        template_type='html'))
-c['services'].append(m)
-#+END_SRC
-
 *** Sample email
    #+REVEAL_HTML: <img class="stretch" src="img/sample_mail.png">
 
@@ -300,21 +268,6 @@ class Trial(shell.ShellCommand):
     def getResultSummary(self):
         # return a summary with the number of passed/failed tests
         return {u'step': cmdsummary}
-#+END_SRC
-
-*** =master.cfg=
-#+BEGIN_SRC python
-from builders.steps import trial
-
-factory = util.BuildFactory()
-factory.addSteps([
-    steps.Git(
-        repourl='git://github.com/buildbot/hello-world.git',
-        mode='incremental'),
-    trial.Trial(command=["trial", "hello"], env={
-        "PYTHONPATH": "."
-    })
-])
 #+END_SRC
 
 *** Results
