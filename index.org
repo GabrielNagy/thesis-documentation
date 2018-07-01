@@ -19,10 +19,8 @@
 the build and testing of code every time a team member commits changes
 to version control
 
-  #+ATTR_REVEAL: :frag frag-style
   *Buildbot* - CI tool written in Python, published under the GPL license
 * Scope of this thesis
-#+ATTR_REVEAL: :frag frag-style
 Implement new custom features and shed light on Buildbot's capabilities as a CI tool
 
 ** Why use Buildbot?
@@ -47,7 +45,6 @@ Implement new custom features and shed light on Buildbot's capabilities as a CI 
    - speak about well-known projects using Buildbot: WebKit, Chromium, Mozilla Firefox/Thunderbird/SeaMonkey (over 700 build and test workers)
    #+END_NOTES
 ** What makes Buildbot appealing?
-   #+ATTR_REVEAL: :frag (appear)
    - batteries-included
      - lightweight and easily extensible
      - add builders and test scenarios in just a few lines of code
@@ -154,7 +151,6 @@ more prone to errors and most certainly a chore to go through.
 #+END_NOTES
 
 ** Triggering builds manually
-   #+ATTR_REVEAL: :frag (appear)
    - auto build trigger:
      - =SingleBranchScheduler= - poll repository and auto build changes
    - manual build trigger:
