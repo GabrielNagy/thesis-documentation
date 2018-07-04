@@ -192,18 +192,6 @@ I devised a way for them to manually send changes to Buildbot for testing. For t
     - the class has a =getAddress= function which takes the username as parameter
     - =getAddress= implements the LDAP search in Python and returns a valid e-mail
 
-*** =mailnotifier.py=
-#+BEGIN_SRC python
-template = u'''\
-<h4>Build status: {{ summary }}</h4>
-<p> Worker used: {{ workername }}</p>
-{% for step in build['steps'] %}
-<p> {{ step['name'] }}: {{ step['result'] }}</p>
-{% endfor %}
-<p><b> -- The Buildbot</b></p>
-'''
-#+END_SRC
-
 *** Sample email
    #+REVEAL_HTML: <img class="stretch" src="img/sample_mail.png">
 
@@ -240,10 +228,10 @@ FAILED (failures=1, successes=2)
 #+BEGIN_SRC python
 class Trial(shell.ShellCommand):
     def gatherTestStatistics(self, line):
-        m = re.search('failures=*(\d+)', line)
+        m = re.search('failures=(\d+)', line)
         if m:
             self.failures = m.group(1)
-        m = re.search(r'successes=*(\d+)', line)
+        m = re.search(r'successes=(\d+)', line)
         if m:
             self.successes = m.group(1)
 #+END_SRC
