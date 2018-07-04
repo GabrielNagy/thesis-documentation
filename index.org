@@ -81,43 +81,6 @@ Implement new custom features and shed light on Buildbot's capabilities as a CI 
 - scheduler - responsible for deciding when builds should run, managed through the configuration file
 #+END_NOTES
 
-** Default implementations
-#+BEGIN_NOTES
-present Buildbot built-in stuff (vanilla installation)
-- console view
-- waterfall view
-- builder pages
-On a fresh installation, Buildbot provides us with some basic views
-#+END_NOTES
-*** Console view
-#+REVEAL_HTML: <img class="stretch" src="img/console_view.png">
-
-#+BEGIN_NOTES
-Buildbot's first basic view:
-- queries for change sources 
-- arranges the activity by placing changes vertically and builders horizontally
-- if tags exist, they are used to group the builders
-#+END_NOTES
-
-*** Waterfall view
-#+REVEAL_HTML: <img class="stretch" src="img/waterfall_view.png">
-
-#+BEGIN_NOTES
-A more "in-your-face" view:
-- shows all activity in a vertical time-line
-- builds are represented by boxes of various height denoting duration
-- builds sorted by builders horizontally, to allow a better representation of build scheduling 
-#+END_NOTES
-
-*** Build page
-#+REVEAL_HTML: <img class="stretch" src="img/build_page.png">
-
-#+BEGIN_NOTES
-- web page corresponding to a single build
-- commands and their outputs can be seen
-- worker, build properties, etc etc
-#+END_NOTES
-
 * Custom implementations
 ** Backend componentization
 - by default, all configuration is stored in the =master.cfg= file
@@ -186,11 +149,6 @@ I devised a way for them to manually send changes to Buildbot for testing. For t
 
 *** Query the AD for the email address using the user's CSL (corporate short login)
    #+REVEAL_HTML: <img class="stretch" src="img/ldapsearch.png">
-
-*** Implementing the search in Buildbot
-    - we implement a class for Buildbot's =IEmailLookup= interface
-    - the class has a =getAddress= function which takes the username as parameter
-    - =getAddress= implements the LDAP search in Python and returns a valid e-mail
 
 *** Sample email
    #+REVEAL_HTML: <img class="stretch" src="img/sample_mail.png">
